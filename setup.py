@@ -4,10 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 dependencies = ['rpy2', 'statsmodels', 'pandas', 'numpy', 'matplotlib',
-		'sklearn', 'tqdm', 'pylab', 'pickle', 'db_queries', 'db_tools', 'scipy']
+		'scikit-learn', 'tqdm', 'pylab', 'scipy']
 
 setuptools.setup(
     name="ensemble",
+    package_dir={"": "src"},
     version="0.0.1",
     author="Marlena Bannick",
     author_email="mnorwood@uw.edu",
@@ -18,7 +19,7 @@ setuptools.setup(
     install_requirements=dependencies,
     packages=setuptools.find_packages(),
     classifiers=(
-        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     )
