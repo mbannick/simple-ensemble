@@ -171,12 +171,11 @@ class Ensemble(object):
         fig, axes = plt.subplots(1, len(ages), figsize=(20, 10), facecolor='white', sharey='row')
         i = 0
         for axis in axes:
-            sub = df_sub.query('age == {}'.format(ages[i]))
-            age_group_name = sub.age_group_name.unique()[0]
-            location_name = sub.location_name.unique()[0]
+            sub = df_sub.loc[df_sub.age == ages[i]].copy()
+            location_name = sub.location.unique()[0]
             axis.plot(sub['year'], sub[response], 'ro')
             axis.plot(sub['year'], sub['predictions'])
-            axis.set_title(age_group_name)
+            axis.set_title(ages[i])
             if response == "ln_rate":
                 ylabel = "Log Death Rate"
             else:
@@ -185,4 +184,4 @@ class Ensemble(object):
                 axis.set_ylabel(ylabel)
             i+=1
         plt.suptitle('Predictions for {}'.format(location_name))
-        return fig
+

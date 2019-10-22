@@ -64,7 +64,7 @@ class Submodel(BaseEstimator, RegressorMixin):
         messages = model.slots['optinfo'].rx2("conv").rx2("lme4").rx2("messages")
         if tuple(model.rclass)[0] != 'lmerMod':
             return False
-        elif messages != rpy2.rinterface.NULL:
+        elif type(messages) != rpy2.rinterface.NULLType:
             if "failed to converge" in ' '.join(messages):
                 return False
             else:
@@ -81,6 +81,7 @@ class Submodel(BaseEstimator, RegressorMixin):
         :param df: data frame with the response values, fixed effects,
                    and random effect
         """
+        self.betas = None
         formula = self.formula
 
         for re in self.random_effects:
@@ -97,6 +98,8 @@ class Submodel(BaseEstimator, RegressorMixin):
             if len(np.array(nlme.fixef(self.mdf))) < len(self.fixed_effects) + 1:
                 self.mdf = None
                 logger.info("singular matrix -- skipping")
+            else:
+                self.betas = np.array(nlme.fixef(self.mdf))
         return self
 
     def predict(self, df, draw=False):
@@ -190,18 +193,17 @@ class Submodel(BaseEstimator, RegressorMixin):
         :param ages: list of ages to include
         :param titleadd: (str) string to append onto title
         """
-
         df['predictions'] = self.predict(df)
         df_sub = df.query(querystring).sort_values('year')
         fig, axes = plt.subplots(1, len(ages), figsize=(20, 10), facecolor='white', sharey='row')
         i = 0
         for axis in axes:
-            sub = df_sub.query('age == {}'.format(ages[i]))
-            age_group_name = sub.age_group_name.unique()[0]
-            location_name = sub.location_name.unique()[0]
+            # sub = df_sub.query('age == {}'.format(ages[i]))
+            sub = df_sub.loc[df_sub.age == ages[i]].copy()
+            location_name = sub.location.unique()[0]
             axis.plot(sub['year'], sub[self.response], 'ro')
             axis.plot(sub['year'], sub['predictions'])
-            axis.set_title(age_group_name)
+            axis.set_title(ages[i])
             if self.response == "ln_rate":
                 ylabel = "Log Death Rate"
             else:
@@ -210,4 +212,4 @@ class Submodel(BaseEstimator, RegressorMixin):
                 axis.set_ylabel(ylabel)
             i+=1
         plt.suptitle('Predictions for {} \n'.format(location_name) + titleadd)
-        return fig
+
